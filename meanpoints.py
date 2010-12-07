@@ -43,6 +43,8 @@ for kk,imagename in enumerate(os.listdir(directory)):
         points[color] = point.tolist()
     meanoutput[imagename] = points
 
+distances = distances.items()
+distances.sort(key=lambda x:x[1])
 print "distances=%s" % distances
 show()
 pck.dump((meanoutput,"%s" % experts),open("meanpoints.pck","wb"),-1)
