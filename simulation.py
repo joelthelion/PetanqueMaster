@@ -43,14 +43,14 @@ print "click points"
 omx,omy = meshgrid(arange(-5,6),arange(-5,6))
 display_grid(omx,omy)
 #oboules = array([(0,0)]+ginput(7)).transpose()
-oboules = array(ginput(10)).transpose()
+oboules = array(ginput(3)).transpose()
 close()
 
 print "generating data"
 datas = []
 for theta in linspace(0,2*pi,10,endpoint=False):
-    cameraplan = array((0,0))
-    camerasphere = array((22,theta,.4))
+    cameraplan = 2*randn(2)
+    camerasphere = array((20+randn()*8,theta,.1+random()*.3))
     camerazoom = 20.
     nboules = petanque.project_points(oboules,cameraplan,camerasphere,camerazoom)
     datas.append(((cameraplan,camerasphere,camerazoom),nboules))
