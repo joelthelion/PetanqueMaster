@@ -21,7 +21,7 @@ def display_grid(mx,my):
 def project_grid(mx,my,cameraplan,camerasphere):
     nmx = zeros(mx.shape)
     nmy = zeros(my.shape)
-    foo = petanque.project_points(vstack((mx.ravel(),my.ravel())),cameraplan,camerasphere)
+    foo = petanque.project_points(vstack((mx.ravel(),my.ravel())),cameraplan,camerasphere,5)
     mx = foo[0,:].reshape(nmx.shape)
     my = foo[1,:].reshape(nmy.shape)
     return mx,my
