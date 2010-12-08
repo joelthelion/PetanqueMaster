@@ -35,8 +35,13 @@ close()
 display_grid(omx,omy,oboules)
 title('plan de la table')
 
-nmx,nmy = project_grid(omx,omy,array((0,0)),array((22,.3,1)),20)
-nboules = petanque.project_points(oboules,array((0,0)),array((22,.3,1)),20)
-display_grid(nmx,nmy,nboules)
+for theta in linspace(0,2*pi,10,endpoint=False):
+    cameraplan = array((0,0))
+    camerasphere = array((22,theta,.4))
+    camerazoom = 20.
+    nmx,nmy = project_grid(omx,omy,cameraplan,camerasphere,camerazoom)
+    nboules = petanque.project_points(oboules,cameraplan,camerasphere,camerazoom)
+    display_grid(nmx,nmy,nboules)
+    title("theta=%.0fdeg" % (180/pi*theta))
 
 show()
