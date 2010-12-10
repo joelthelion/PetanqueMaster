@@ -1,6 +1,7 @@
-__all__ = ["project_points"]
+__all__ = ["project_points","estimate_positions"]
 
 from scipy import *
+import scipy.optimize as opt
 
 def cart_from_sphere(pointsphere):
     assert(pointsphere[0]>0)
@@ -19,3 +20,16 @@ def project_points(pointsplan,cameraplan,camerasphere,camerafocal):
     points = dot(rot,vstack([pointsplan[0,:]-cameraplan[0]-cameraouter[0],pointsplan[1,:]-cameraplan[1]-cameraouter[1],zeros(pointsplan.shape[1])-cameraouter[2]]))
     assert((points[2,:]<0).all())
     return -camerafocal*points[:2,:]/points[2,:]
+
+#TODO test other metric
+def estimate_positions(datas):
+    kballs = datas[0][1].shape[1]
+    def fonctionnelle(position,kk):
+        distance = []
+        for (cameraplan,camerasphere,camerafocal),projections_measure in datas:
+            projections = project_points(position.reshape(2,1),cameraplan,camerasphere,camerafocal)
+            distance.append(sum(absolute(projections-projections_measure[:,kk])))
+        return sum(distance)
+    positions_estimated = array([opt.fmin(fonctionnelle,zeros(2),(kk,),disp=False) for kk in xrange(kballs)]).transpose()
+    return positions_estimated
+

@@ -4,10 +4,8 @@
 # all distance are in meters
 # all angles are in radians
 
-from pylab import *
 import petanque
-import scipy.optimize as opt
-import scipy.linalg as lin
+from pylab import *
 
 def display_grid(mx,my,limit):
     factor = 1
@@ -30,7 +28,6 @@ def display_grid(mx,my,limit):
     ylabel("y %s" % unit)
     return factor
 
-
 def project_grid(mx,my,cameraplan,camerasphere,zoom):
     nmx = zeros(mx.shape)
     nmy = zeros(my.shape)
@@ -39,52 +36,39 @@ def project_grid(mx,my,cameraplan,camerasphere,zoom):
     my = foo[1,:].reshape(nmy.shape)
     return mx,my
 
-def estimate_boules(datas):
-
-    def fonctionnelle(eboule,kk):
-        distance = []
-        for (cameraplan,camerasphere,camerafocal),nboules in datas:
-            neboule = petanque.project_points(eboule.reshape(2,1),cameraplan,camerasphere,camerafocal)
-            distance.append(sum(absolute(neboule-nboules[:,kk])))
-        return sum(distance)
-
-    eboules = array([opt.fmin(fonctionnelle,zeros(2),(kk,),disp=False) for kk in xrange(oboules.shape[1])]).transpose()
-    return eboules
-
 print "click points"
-omx,omy = meshgrid(linspace(-1.5,1.5,7),linspace(-1.5,1.5,7))
-display_grid(omx,omy,2)
+mx,my = meshgrid(linspace(-1.5,1.5,7),linspace(-1.5,1.5,7))
+display_grid(mx,my,2)
 title("click balls position")
-#oboules = array([(0,0)]+ginput(7)).transpose()
-oboules = array(ginput(3)).transpose()
+positions_truth = array(ginput(3)).transpose()
 close()
 
 print "generating data"
 datas = []
 for theta in linspace(0,2*pi,10,endpoint=False):
     cameraplan = .3*randn(2)
-    camerasphere = array((2.+random(),theta+pi/10*randn(),pi/180*(15.+random()*5.)))
+    camerasphere = array((2.+random(),theta+pi/10*randn(),pi/180*(15.+random()*20)))
     camerafocal = 0.05
-    nboules = petanque.project_points(oboules,cameraplan,camerasphere,camerafocal)
-    datas.append(((cameraplan,camerasphere,camerafocal),nboules))
+    projections_truth = petanque.project_points(positions_truth,cameraplan,camerasphere,camerafocal)
+    datas.append(((cameraplan,camerasphere,camerafocal),projections_truth))
 
 print "estimating positions with fixed camera params"
-eboules = estimate_boules(datas)
-print "bias=%s [mm]" % (1e3*(eboules-oboules).mean(axis=1))
-print "std=%s [mm]" % (1e3*(eboules-oboules).std(axis=1))
+positions_estimated = petanque.estimate_positions(datas)
+print "bias=%s [mm]" % (1e3*(positions_estimated-positions_truth).mean(axis=1))
+print "std=%s [mm]" % (1e3*(positions_estimated-positions_truth).std(axis=1))
 
 print "display results"
-factor = display_grid(omx,omy,2)
-plot(factor*oboules[0,:],factor*oboules[1,:],'go-')
-plot(factor*eboules[0,:],factor*eboules[1,:],'r*-')
+factor = display_grid(mx,my,2)
+plot(factor*positions_truth[0,:],factor*positions_truth[1,:],'go-')
+plot(factor*positions_estimated[0,:],factor*positions_estimated[1,:],'r*-')
 title('plan de la table')
 
-for kk,((cameraplan,camerasphere,camerafocal),nboules) in enumerate(datas):
-    neboules = petanque.project_points(eboules,cameraplan,camerasphere,camerafocal)
-    nmx,nmy = project_grid(omx,omy,cameraplan,camerasphere,camerafocal)
-    factor = display_grid(nmx,nmy,.05)
-    plot(factor*nboules[0,:],factor*nboules[1,:],'go-')
-    plot(factor*neboules[0,:],factor*neboules[1,:],'r*-')
-    title("config %d" % kk)
+for kk,((cameraplan,camerasphere,camerafocal),projections_truth) in enumerate(datas):
+    projections_estimated = petanque.project_points(positions_estimated,cameraplan,camerasphere,camerafocal)
+    projections_mx,projections_my = project_grid(mx,my,cameraplan,camerasphere,camerafocal)
+    factor = display_grid(projections_mx,projections_my,.05)
+    plot(factor*projections_truth[0,:],factor*projections_truth[1,:],'go-')
+    plot(factor*projections_estimated[0,:],factor*projections_estimated[1,:],'r*-')
+    title(u"config %d plan=(%.2f,%.2f) r=%.2f theta=%.0f° phi=%.0f°" % (kk,cameraplan[0],cameraplan[1],camerasphere[0],180/pi*camerasphere[1],180/pi*camerasphere[2]))
 
 show()
