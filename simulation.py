@@ -40,8 +40,9 @@ print "click points"
 mx,my = meshgrid(linspace(-1.5,1.5,7),linspace(-1.5,1.5,7))
 display_grid(mx,my,2)
 title("click balls position")
-positions_truth = array(ginput(3)).transpose()
+positions_truth = array(ginput(-1)).transpose()
 close()
+print "clicked %d balls" % positions_truth.shape[1]
 
 print "generating data"
 datas = []
