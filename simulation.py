@@ -6,6 +6,7 @@
 
 import petanque
 from pylab import *
+import scipy.linalg as lin
 
 def display_grid(mx,my,limit):
     factor = 1
@@ -36,11 +37,17 @@ def project_grid(mx,my,cameraplan,camerasphere,zoom):
     my = foo[1,:].reshape(nmy.shape)
     return mx,my
 
+def order_positions(positions):
+    extracted = [ (kk,lin.norm(position)) for kk,position in enumerate(positions.transpose()) ]
+    extracted.sort(key=lambda x: x[1])
+    return [ tag for tag,distance in extracted ]
+
 print "click points"
 mx,my = meshgrid(linspace(-1.5,1.5,7),linspace(-1.5,1.5,7))
 display_grid(mx,my,2)
 title("click balls position")
 positions_truth = array(ginput(-1)).transpose()
+order_truth = order_positions(positions_truth)
 close()
 print "clicked %d balls" % positions_truth.shape[1]
 
@@ -57,13 +64,17 @@ datas_noisy = [(params,projections+randn(projections.size).reshape(projections.s
 
 print "estimating positions with fixed camera params"
 positions_estimated = petanque.estimate_positions(datas)
+order_estimated = order_positions(positions_estimated)
 print "bias=%s [mm]" % (1e3*(positions_estimated-positions_truth).mean(axis=1))
 print "std=%s [mm]" % (1e3*(positions_estimated-positions_truth).std(axis=1))
+if order_estimated==order_truth: print "ORDER PRESERVED!!!"
 
 print "estimating positions with fixed camera params with noisy projections"
 positions_estimated_noisy = petanque.estimate_positions(datas_noisy)
+order_estimated_noisy = order_positions(positions_estimated_noisy)
 print "bias=%s [mm]" % (1e3*(positions_estimated_noisy-positions_truth).mean(axis=1))
 print "std=%s [mm]" % (1e3*(positions_estimated_noisy-positions_truth).std(axis=1))
+if order_estimated_noisy==order_truth: print "ORDER PRESERVED!!!"
 
 print "display results"
 factor = display_grid(mx,my,2)

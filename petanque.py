@@ -25,11 +25,19 @@ def project_points(pointsplan,cameraplan,camerasphere,camerafocal):
 def estimate_positions(datas):
     kballs = datas[0][1].shape[1]
     def fonctionnelle(position,kk):
-        distance = []
+        distance = 0
         for (cameraplan,camerasphere,camerafocal),projections_measure in datas:
             projections = project_points(position.reshape(2,1),cameraplan,camerasphere,camerafocal)
-            distance.append(sum(absolute(projections-projections_measure[:,kk])))
-        return sum(distance)
-    positions_estimated = array([opt.fmin(fonctionnelle,zeros(2),(kk,),disp=False) for kk in xrange(kballs)]).transpose()
+            distance += absolute(projections-projections_measure[:,kk]).mean()
+            #distance += square(projections-projections_measure[:,kk]).mean()
+        return distance/len(datas)
+    positions_estimated = []
+    for kk in xrange(kballs):
+        estimation,fopt,niter,ncall,warn = opt.fmin(fonctionnelle,zeros(2),(kk,),ftol=0,disp=False,full_output=True)
+        if warn==1: print "WARNING: max function call reached"
+        if warn==2: print "WARNING: max iteration reached"
+        positions_estimated.append(estimation)
+    positions_estimated = array(positions_estimated).transpose()
     return positions_estimated
+
 
