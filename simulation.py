@@ -7,6 +7,7 @@
 import petanque
 from pylab import *
 import scipy.linalg as lin
+standard_ball_radius = .09
 
 def display_grid(mx,my,limit):
     factor = 1
@@ -53,14 +54,14 @@ print "clicked %d balls" % positions_truth.shape[1]
 
 print "generating data"
 datas = []
-for theta in linspace(0,2*pi,10,endpoint=False):
+for theta in linspace(0,2*pi,3,endpoint=False):
     cameraplan = .3*randn(2)
     camerasphere = array((2.+random(),theta+pi/10*randn(),pi/180*(15.+random()*20)))
     camerafocal = 0.05
     projections_truth = petanque.project_points(positions_truth,cameraplan,camerasphere,camerafocal)
     datas.append(((cameraplan,camerasphere,camerafocal),projections_truth))
 
-datas_noisy = [(params,projections+randn(projections.size).reshape(projections.shape)*.001) for params,projections in datas]
+datas_noisy = [(params,projections+randn(projections.size).reshape(projections.shape)*.0005) for params,projections in datas]
 
 print "estimating positions with fixed camera params"
 positions_estimated = petanque.estimate_positions(datas)
@@ -78,6 +79,9 @@ if order_estimated_noisy==order_truth: print "ORDER PRESERVED!!!"
 
 print "display results"
 factor = display_grid(mx,my,2)
+for position in positions_truth.transpose():
+    gca().add_patch(Circle(position,standard_ball_radius,fill=False))
+plot()
 plot(factor*positions_truth[0,:],factor*positions_truth[1,:],'go',label="truth")
 plot(factor*positions_estimated[0,:],factor*positions_estimated[1,:],'g*',label="est")
 plot(factor*positions_estimated_noisy[0,:],factor*positions_estimated_noisy[1,:],'r*',label="est/noise")
