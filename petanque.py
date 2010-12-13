@@ -1,4 +1,4 @@
-__all__ = ["project_points","estimate_positions","display_grid","project_grid"]
+__all__ = ["project_points","estimate_positions","display_grid","display_projections","project_grid"]
 
 from pylab import *
 import scipy.optimize as opt
@@ -67,6 +67,12 @@ def display_grid(mx,my,limit):
     xlabel("x %s" % unit)
     ylabel("y %s" % unit)
     return factor
+
+def display_projections(factor,positions,style,label):
+    for position in positions.transpose():
+        gca().add_patch(Circle(factor*position[:2],factor*position[2],fill=True,alpha=.2))
+    plot()
+    plot(factor*positions[0,:],factor*positions[1,:],style,label=label)
 
 def project_grid(mx,my,cameraplan,camerasphere,zoom):
     nmx = zeros(mx.shape)

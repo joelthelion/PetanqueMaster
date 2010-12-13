@@ -12,12 +12,6 @@ standard_ball_radius = .09
 number_of_balls = 6
 number_of_pictures = 8
 
-def display_projections(factor,positions,style,label):
-    for position in positions.transpose():
-        gca().add_patch(Circle(factor*position[:2],factor*position[2],fill=True,alpha=.2))
-    plot()
-    plot(factor*positions[0,:],factor*positions[1,:],style,label=label)
-
 def order_positions(positions):
     extracted = [ (kk,lin.norm(position)) for kk,position in enumerate(positions.transpose()) ]
     extracted.sort(key=lambda x: x[1])
@@ -60,9 +54,9 @@ if order_estimated_noisy==order_truth: print "ORDER PRESERVED!!!"
 
 print "display results"
 factor = petanque.display_grid(mx,my,2)
-display_projections(factor,positions_truth,"go","truth")
-display_projections(factor,positions_estimated,"g*","est")
-display_projections(factor,positions_estimated_noisy,"r*","est w/ noise")
+petanque.display_projections(factor,positions_truth,"go","truth")
+petanque.display_projections(factor,positions_estimated,"g*","est")
+petanque.display_projections(factor,positions_estimated_noisy,"r*","est w/ noise")
 legend()
 title('plan de la table')
 
@@ -71,10 +65,10 @@ for kk,(((cameraplan,camerasphere,camerafocal),projections_truth),(params2,proje
     projections_estimated_noisy = petanque.project_points(positions_estimated_noisy,cameraplan,camerasphere,camerafocal)
     projections_mx,projections_my = petanque.project_grid(mx,my,cameraplan,camerasphere,camerafocal)
     factor = petanque.display_grid(projections_mx,projections_my,.05)
-    display_projections(factor,projections_truth,'go',"truth")
-    display_projections(factor,projections_estimated,'g*',"est")
-    display_projections(factor,projections_noisy,'ro',"truth w/ noise")
-    display_projections(factor,projections_estimated_noisy,'r*',"est w/ noise")
+    petanque.display_projections(factor,projections_truth,'go',"truth")
+    petanque.display_projections(factor,projections_estimated,'g*',"est")
+    petanque.display_projections(factor,projections_noisy,'ro',"truth w/ noise")
+    petanque.display_projections(factor,projections_estimated_noisy,'r*',"est w/ noise")
     legend()
     title(u"config %d plan=(%.2f,%.2f) r=%.2f theta=%.0f° phi=%.0f°" % (kk,cameraplan[0],cameraplan[1],camerasphere[0],180/pi*camerasphere[1],180/pi*camerasphere[2]))
 

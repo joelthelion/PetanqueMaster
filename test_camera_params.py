@@ -2,7 +2,6 @@
 # coding: utf-8
 
 from pylab import *
-import scipy.linalg as lin
 import petanque
 
 omx,omy = meshgrid(arange(-5,6),arange(-5,6))
