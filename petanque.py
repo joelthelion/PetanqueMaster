@@ -39,8 +39,8 @@ def estimate_positions_without_radius(datas,radius):
     positions_estimated = []
     for kk in xrange(kballs):
         estimation,fopt,niter,ncall,warn = opt.fmin(fonctionnelle,zeros(2),(kk,),ftol=0,disp=True,maxfun=1000,full_output=True)
-        if warn==1: print "WARNING: max function call reached"
-        if warn==2: print "WARNING: max iteration reached"
+        if warn==1: print "WARNING: max function call reached (%d calls)" % ncall
+        if warn==2: print "WARNING: max iteration reached (%d iters)" % niter
         positions_estimated.append(estimation)
     positions_estimated = vstack((array(positions_estimated).transpose(),radius*ones(kballs)))
     return positions_estimated

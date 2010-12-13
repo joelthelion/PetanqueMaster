@@ -76,15 +76,15 @@ datas_noisy = [(params,projections+randn(projections.size).reshape(projections.s
 print "estimating positions with fixed camera params"
 positions_estimated = petanque.estimate_positions(datas,standard_ball_radius)
 order_estimated = order_positions(positions_estimated)
-print "bias=%s [mm]" % (1e3*(positions_estimated-positions_truth).mean(axis=1))
-print "std=%s [mm]" % (1e3*(positions_estimated-positions_truth).std(axis=1))
+print "bias=%s [mm]" % (1e3*(positions_estimated-positions_truth)[:2].mean(axis=1))
+print "std=%s [mm]" % (1e3*(positions_estimated-positions_truth)[:2].std(axis=1))
 if order_estimated==order_truth: print "ORDER PRESERVED!!!"
 
 print "estimating positions with fixed camera params with noisy projections"
 positions_estimated_noisy = petanque.estimate_positions(datas_noisy,standard_ball_radius)
 order_estimated_noisy = order_positions(positions_estimated_noisy)
-print "bias=%s [mm]" % (1e3*(positions_estimated_noisy-positions_truth).mean(axis=1))
-print "std=%s [mm]" % (1e3*(positions_estimated_noisy-positions_truth).std(axis=1))
+print "bias=%s [mm]" % (1e3*(positions_estimated_noisy-positions_truth)[:2].mean(axis=1))
+print "std=%s [mm]" % (1e3*(positions_estimated_noisy-positions_truth)[:2].std(axis=1))
 if order_estimated_noisy==order_truth: print "ORDER PRESERVED!!!"
 
 print "display results"
