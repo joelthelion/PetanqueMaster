@@ -1,6 +1,6 @@
-__all__ = ["project_points","estimate_positions"]
+__all__ = ["project_points","estimate_positions","display_grid","project_grid"]
 
-from scipy import *
+from pylab import *
 import scipy.optimize as opt
 
 def cart_from_sphere(pointsphere):
@@ -45,5 +45,34 @@ def estimate_positions_without_radius(datas,radius):
     positions_estimated = vstack((array(positions_estimated).transpose(),radius*ones(kballs)))
     return positions_estimated
 
-
 estimate_positions = estimate_positions_without_radius
+
+def display_grid(mx,my,limit):
+    factor = 1
+    unit = "[m]"
+    if limit<1:
+        factor = 100
+        unit = "[cm]"
+    figure()
+    for ii in xrange(mx.shape[0]):
+        plot(factor*mx[ii,:],factor*my[ii,:],'b-',alpha=.5)
+    for jj in xrange(mx.shape[1]):
+        plot(factor*mx[:,jj],factor*my[:,jj],'r-',alpha=.5)
+    text(factor*mx[0,0],factor*my[0,0],"O")
+    text(factor*mx[0,-1],factor*my[0,-1],"ex")
+    text(factor*mx[-1,0],factor*my[-1,0],"ey")
+    axis("equal")
+    ylim(-factor*limit,factor*limit)
+    xlim(-factor*limit,factor*limit)
+    xlabel("x %s" % unit)
+    ylabel("y %s" % unit)
+    return factor
+
+def project_grid(mx,my,cameraplan,camerasphere,zoom):
+    nmx = zeros(mx.shape)
+    nmy = zeros(my.shape)
+    foo = project_points(vstack((mx.ravel(),my.ravel(),zeros(mx.size))),cameraplan,camerasphere,zoom)
+    mx = foo[0,:].reshape(nmx.shape)
+    my = foo[1,:].reshape(nmy.shape)
+    return mx,my
+

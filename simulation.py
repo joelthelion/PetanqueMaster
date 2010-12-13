@@ -12,40 +12,11 @@ standard_ball_radius = .09
 number_of_balls = 6
 number_of_pictures = 8
 
-def display_grid(mx,my,limit):
-    factor = 1
-    unit = "[m]"
-    if limit<1:
-        factor = 100
-        unit = "[cm]"
-    figure()
-    for ii in xrange(mx.shape[0]):
-        plot(factor*mx[ii,:],factor*my[ii,:],'b-',alpha=.5)
-    for jj in xrange(mx.shape[1]):
-        plot(factor*mx[:,jj],factor*my[:,jj],'r-',alpha=.5)
-    text(factor*mx[0,0],factor*my[0,0],"O")
-    text(factor*mx[0,-1],factor*my[0,-1],"ex")
-    text(factor*mx[-1,0],factor*my[-1,0],"ey")
-    axis("equal")
-    ylim(-factor*limit,factor*limit)
-    xlim(-factor*limit,factor*limit)
-    xlabel("x %s" % unit)
-    ylabel("y %s" % unit)
-    return factor
-
 def display_projections(factor,positions,style,label):
     for position in positions.transpose():
         gca().add_patch(Circle(factor*position[:2],factor*position[2],fill=True,alpha=.2))
     plot()
     plot(factor*positions[0,:],factor*positions[1,:],style,label=label)
-
-def project_grid(mx,my,cameraplan,camerasphere,zoom):
-    nmx = zeros(mx.shape)
-    nmy = zeros(my.shape)
-    foo = petanque.project_points(vstack((mx.ravel(),my.ravel(),zeros(mx.size))),cameraplan,camerasphere,zoom)
-    mx = foo[0,:].reshape(nmx.shape)
-    my = foo[1,:].reshape(nmy.shape)
-    return mx,my
 
 def order_positions(positions):
     extracted = [ (kk,lin.norm(position)) for kk,position in enumerate(positions.transpose()) ]
@@ -54,7 +25,7 @@ def order_positions(positions):
 
 print "click points"
 mx,my = meshgrid(linspace(-1.5,1.5,7),linspace(-1.5,1.5,7))
-display_grid(mx,my,2)
+petanque.display_grid(mx,my,2)
 title("click balls position")
 positions_truth = array(ginput(number_of_balls)).transpose()
 positions_truth = vstack((positions_truth,standard_ball_radius*ones(positions_truth.shape[1])))
@@ -88,7 +59,7 @@ print "std=%s [mm]" % (1e3*(positions_estimated_noisy-positions_truth)[:2].std(a
 if order_estimated_noisy==order_truth: print "ORDER PRESERVED!!!"
 
 print "display results"
-factor = display_grid(mx,my,2)
+factor = petanque.display_grid(mx,my,2)
 display_projections(factor,positions_truth,"go","truth")
 display_projections(factor,positions_estimated,"g*","est")
 display_projections(factor,positions_estimated_noisy,"r*","est w/ noise")
@@ -98,11 +69,12 @@ title('plan de la table')
 for kk,(((cameraplan,camerasphere,camerafocal),projections_truth),(params2,projections_noisy)) in enumerate(zip(datas,datas_noisy)):
     projections_estimated = petanque.project_points(positions_estimated,cameraplan,camerasphere,camerafocal)
     projections_estimated_noisy = petanque.project_points(positions_estimated_noisy,cameraplan,camerasphere,camerafocal)
-    projections_mx,projections_my = project_grid(mx,my,cameraplan,camerasphere,camerafocal)
-    factor = display_grid(projections_mx,projections_my,.05)
+    projections_mx,projections_my = petanque.project_grid(mx,my,cameraplan,camerasphere,camerafocal)
+    factor = petanque.display_grid(projections_mx,projections_my,.05)
     display_projections(factor,projections_truth,'go',"truth")
     display_projections(factor,projections_estimated,'g*',"est")
-    display_projections(factor,projections_estimated_noisy,'ro',"noise")
+    display_projections(factor,projections_noisy,'ro',"truth w/ noise")
+    display_projections(factor,projections_estimated_noisy,'r*',"est w/ noise")
     legend()
     title(u"config %d plan=(%.2f,%.2f) r=%.2f theta=%.0f° phi=%.0f°" % (kk,cameraplan[0],cameraplan[1],camerasphere[0],180/pi*camerasphere[1],180/pi*camerasphere[2]))
 
